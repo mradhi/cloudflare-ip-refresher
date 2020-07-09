@@ -31,6 +31,13 @@ class IPHistoryRepository extends ServiceEntityRepository
         ]);
     }
 
+    public function findLatest(): ?IPHistory
+    {
+        return $this->findOneBy([], [
+            'createdAt' => Criteria::DESC
+        ]);
+    }
+
     public function add(IPHistory $history): void
     {
         $this->_em->persist($history);

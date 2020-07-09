@@ -51,8 +51,9 @@ class IPDiscoverSubscriber implements EventSubscriberInterface
     public function onDiscover(IPDiscoverEvent $event): void
     {
         $ipAddress = $event->getIpAddress();
+        $history   = $this->ipHistoryRepository->findLatest();
 
-        if (null === $history = $this->ipHistoryRepository->findLatestByIpAddress($ipAddress)) {
+        if (null === $history || $history->getIpAddress() !== $ipAddress) {
             // Save the new IP address
             $this->ipHistoryRepository->add(
                 $history = new IPHistory($ipAddress, false)
@@ -64,7 +65,7 @@ class IPDiscoverSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$history->isSynchronized()) {
+        if ($history && !$history->isSynchronized()) {
             $this->eventDispatcher->dispatch(new IPHistoryNotSynchronizedEvent($history));
         }
     }
