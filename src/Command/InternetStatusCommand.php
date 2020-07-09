@@ -72,12 +72,12 @@ class InternetStatusCommand extends Command
             );
 
             if (!$isConnected) {
-                $io->error('The machine is not isConnected to the internet, try again.');
+                $io->error('The machine is not connected to the internet, try again.');
 
                 return 1;
             }
 
-            $io->success('The machine is isConnected to the internet.');
+            $io->success('The machine is connected to the internet.');
 
             $lock->release();
         }

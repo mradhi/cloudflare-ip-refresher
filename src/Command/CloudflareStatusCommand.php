@@ -54,13 +54,6 @@ class CloudflareStatusCommand extends Command
         if ($lock->acquire()) {
             $io = new SymfonyStyle($input, $output);
 
-            $r = $this->cloudflareService->getDNS()
-                ->listRecords($this->cloudflareService->getZoneID('elguen.com'), 'A');
-
-            dump($r);
-            $lock->release();
-            return 0;
-
             if (!$this->cloudflareService->isConnected()) {
                 $io->error('Could not connect to Cloudflare, check your internet connection/access keys.');
 
