@@ -20,7 +20,10 @@ class InternetChecker
     public function isConnected(): bool
     {
         // Open socket connection
-        $connected = @fsockopen("www.google.com", 80);
+        $connected = @fsockopen("www.google.com", 80, $errno, $errstr, 3);
+
+        // Clean memory
+        unset($errno, $errstr);
 
         if (false !== $connected){
             // Close socket connection
