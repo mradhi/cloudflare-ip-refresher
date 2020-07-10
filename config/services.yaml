@@ -33,3 +33,7 @@ services:
     App\IP\IPDiscover:
         arguments:
             $lookupURL: '%env(IP_LOOKUP_URL)%'
+
+    App\DNS\Cloudflare\CloudflareSynchronizer:
+        arguments:
+            $domains: '%env(IP_DOMAINS)%'
