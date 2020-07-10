@@ -14,7 +14,7 @@ namespace App\Event;
 
 use App\Entity\IPHistory;
 
-class IPHistoryNotSynchronizedEvent
+class IPHistorySynchronizeEvent
 {
     /**
      * @var IPHistory

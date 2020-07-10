@@ -15,7 +15,7 @@ namespace App\EventSubscriber;
 use App\Entity\IPHistory;
 use App\Event\IPChangedEvent;
 use App\Event\IPDiscoverEvent;
-use App\Event\IPHistoryNotSynchronizedEvent;
+use App\Event\IPHistorySynchronizeEvent;
 use App\Repository\IPHistoryRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -54,19 +54,11 @@ class IPDiscoverSubscriber implements EventSubscriberInterface
         $history   = $this->ipHistoryRepository->findLatest();
 
         if (null === $history || $history->getIpAddress() !== $ipAddress) {
-            // Save the new IP address
-            $this->ipHistoryRepository->add(
-                $history = new IPHistory($ipAddress, false)
-            );
             // Dispatch IP changed event
             $this->eventDispatcher->dispatch(new IPChangedEvent($ipAddress, $history));
-
-            // Skip.
-            return;
-        }
-
-        if ($history && !$history->isSynchronized()) {
-            $this->eventDispatcher->dispatch(new IPHistoryNotSynchronizedEvent($history));
+        } elseif (!$history->isSynchronized()) {
+            // Dispatch Synchronize event in this IP again
+            $this->eventDispatcher->dispatch(new IPHistorySynchronizeEvent($history));
         }
     }
 }

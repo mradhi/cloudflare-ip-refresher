@@ -63,7 +63,7 @@ class CloudflareDiscoverCommand extends Command
     {
         $this
             ->setDescription('Discover IP changes and update DNS records.')
-            ->setHelp('This command allows you to check if the IP adress changed and synchronize it with Cloudflare DNS records');
+            ->setHelp('This command allows you to check if the IP address changed and synchronize it with Cloudflare DNS records');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

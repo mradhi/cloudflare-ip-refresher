@@ -31,41 +31,49 @@ class CloudflareSynchronizer
      */
     protected $entityManager;
 
-    public function __construct(CloudflareService $cloudflareService, EntityManagerInterface $entityManager)
+    /**
+     * @var array
+     */
+    protected $domains;
+
+    public function __construct(CloudflareService $cloudflareService, EntityManagerInterface $entityManager, string $domains)
     {
         $this->cloudflareService = $cloudflareService;
-        $this->entityManager     = $entityManager;
+        $this->entityManager = $entityManager;
+        $this->domains = !empty($domains) ? explode(',', $domains) : [];
     }
 
-    public function synchronize(IPHistory $ipHistory, string $domainName, string $type = 'A'): void
+    public function synchronize(IPHistory $ipHistory, string $type = ''): void
     {
         if (!$this->cloudflareService->isConnected()) {
             throw new AuthenticationException('Could not connect to Cloudflare.');
         }
 
-        // Get the zone ID
-        $zoneID = $this->cloudflareService->getZoneID($domainName);
-
         // Fetch all DNS records
         $dnsService = $this->cloudflareService->getDNS();
-        $dnsList    = $dnsService->listRecords($zoneID, $type, '', '', 1, 100);
-        $ipAddress  = $ipHistory->getIpAddress();
-        $errors     = 0;
+        $errors = 0;
 
-        foreach ($dnsList->result as $record) {
-            $response = $dnsService->updateRecordDetails($zoneID, $record->id, [
-                'type'    => $record->type,
-                'name'    => $record->name,
-                'content' => $ipAddress,
-                'ttl'     => $record->ttl,
-                'proxied' => $record->proxied
-            ]);
+        foreach ($this->domains as $domain) {
+            // Get the zone ID
+            $zoneID = $this->cloudflareService->getZoneID($domain);
+            $dnsList = $dnsService->listRecords($zoneID, $type, '', '', 1, 100);
+            $ipAddress = $ipHistory->getIpAddress();
 
-            if (!$response->success) {
-                $errors += 1;
+            foreach ($dnsList->result as $record) {
+                $response = $dnsService->updateRecordDetails($zoneID, $record->id, [
+                    'type' => $record->type,
+                    'name' => $record->name,
+                    'content' => $ipAddress,
+                    'ttl' => $record->ttl,
+                    'proxied' => $record->proxied
+                ]);
+
+                if (!$response->success) {
+                    $errors += 1;
+                }
+
+                sleep(self::SLEEP_BETWEEN_OPERATIONS);
             }
-
-            sleep(self::SLEEP_BETWEEN_OPERATIONS);
         }
 
         if ($errors === 0) {

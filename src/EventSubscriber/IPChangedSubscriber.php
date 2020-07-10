@@ -13,8 +13,12 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\DNS\Cloudflare\CloudflareSynchronizer;
+use App\Entity\IPHistory;
 use App\Event\IPChangedEvent;
+use App\Event\IPHistorySynchronizeEvent;
+use App\Repository\IPHistoryRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class IPChangedSubscriber implements EventSubscriberInterface
 {
@@ -23,8 +27,20 @@ class IPChangedSubscriber implements EventSubscriberInterface
      */
     protected $cloudflareSynchronizer;
 
-    public function __construct(CloudflareSynchronizer $cloudflareSynchronizer)
+    /**
+     * @var IPHistoryRepository
+     */
+    protected $ipHistoryRepository;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    protected $eventDispatcher;
+
+    public function __construct(IPHistoryRepository $ipHistoryRepository, EventDispatcherInterface $eventDispatcher, CloudflareSynchronizer $cloudflareSynchronizer)
     {
+        $this->ipHistoryRepository = $ipHistoryRepository;
+        $this->eventDispatcher = $eventDispatcher;
         $this->cloudflareSynchronizer = $cloudflareSynchronizer;
     }
 
@@ -40,7 +56,11 @@ class IPChangedSubscriber implements EventSubscriberInterface
 
     public function onIPChanged(IPChangedEvent $event): void
     {
-        // Here we need to update our records on Cloudflare.
-        $this->cloudflareSynchronizer->synchronize($event->getIpHistory(), 'elguen.com');
+        // Save the new IP address
+        $this->ipHistoryRepository->add(
+            $history = new IPHistory($event->getIpAddress(), false)
+        );
+
+        $this->eventDispatcher->dispatch(new IPHistorySynchronizeEvent($history));
     }
 }

@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\DNS\Cloudflare\CloudflareSynchronizer;
-use App\Event\IPHistoryNotSynchronizedEvent;
+use App\Event\IPHistorySynchronizeEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class IPHistoryNotSynchronizedSubscriber implements EventSubscriberInterface
+class IPHistorySynchronizeSubscriber implements EventSubscriberInterface
 {
     /**
      * @var CloudflareSynchronizer
@@ -34,13 +34,13 @@ class IPHistoryNotSynchronizedSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            IPHistoryNotSynchronizedEvent::class => 'onNotSynchronized'
+            IPHistorySynchronizeEvent::class => 'onSynchronize'
         ];
     }
 
-    public function onNotSynchronized(IPHistoryNotSynchronizedEvent $event): void
+    public function onSynchronize(IPHistorySynchronizeEvent $event): void
     {
         // Here we need to update our records on Cloudflare.
-        $this->cloudflareSynchronizer->synchronize($event->getIpHistory(), 'elguen.com');
+        $this->cloudflareSynchronizer->synchronize($event->getIpHistory());
     }
 }

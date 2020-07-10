@@ -27,7 +27,7 @@ class IPChangedEvent extends Event
      */
     protected $ipHistory;
 
-    public function __construct(string $ipAddress, IPHistory $ipHistory)
+    public function __construct(string $ipAddress, ?IPHistory $ipHistory = null)
     {
         $this->ipAddress = $ipAddress;
         $this->ipHistory = $ipHistory;
@@ -44,7 +44,7 @@ class IPChangedEvent extends Event
     /**
      * @return IPHistory
      */
-    public function getIpHistory(): IPHistory
+    public function getIpHistory(): ?IPHistory
     {
         return $this->ipHistory;
     }
