@@ -63,7 +63,7 @@ class CloudflareSynchronizer
                 $response = $dnsService->updateRecordDetails($zoneID, $record->id, [
                     'type' => $record->type,
                     'name' => $record->name,
-                    'content' => $ipAddress,
+                    'content' => ip2long($record->content) ? $ipAddress : $record->content,
                     'ttl' => $record->ttl,
                     'proxied' => $record->proxied
                 ]);
